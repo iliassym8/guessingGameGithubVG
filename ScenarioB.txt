@@ -1,0 +1,42 @@
+# Scenario B: git rebase (Ren och linjär historik)
+
+# Skapa och byt till en ny feature-branch för betalning
+git checkout -b feature-payment
+
+# Skapa en fil, lägg till betalningskod
+# och spara ändringen med en commit
+echo "Payment System v1" >> payment.txt
+echo "Payment Integration" >> app.txt
+git add .
+git commit -m "Add payment feature"
+
+# Byt till main och lägg till en
+# säkerhetspatch samtidigt i app.txt
+git checkout main
+echo "Security Patch" >> app.txt
+git commit -am "Apply security patch"
+
+# Byt tillbaka till din feature-branch
+# och rebase:a den ovanpå main
+git checkout feature-payment
+git rebase main
+
+# Git stannar vid en konflikt i app.txt.
+# Öppna filen och ta bort konfliktsymbolerna
+# (<<<<<<<, =======, >>>>>>>) så att
+# både betalningskoden och patchen finns kvar.
+
+# Lägg till den fixade filen
+git add app.txt
+
+# Fortsätt rebase-processen
+git rebase --continue
+
+# Byt till main och slutför genom
+# att merga in den rena grenen
+git checkout main
+git merge feature-payment
+
+# Visa den nya rena historiken
+git log --oneline 
+
