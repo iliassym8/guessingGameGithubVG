@@ -58,3 +58,120 @@ $ git status
 On branch test-branch
 nothing to commit, working tree clean
 
+.....
+
+VG delen 
+
+
+#git merge
+När du kör git merge feature-branch skapar Git en helt ny merge commit som binder samman historiken från båda branches.
+
+Fördelar
+Säkerhet & Kontext: Historiken speglar exakt vad som hände i verkligheten och när grenarna skapades och slogs ihop.
+Ingen ändrad historik: Ändrar aldrig befintliga commit-ID:n (hasher), vilket gör den väldigt säker när flera personer delar samma branch.
+
+Nackdelar:
+Suddig historik: Om det görs många merges kan historikträdet (git log) bli väldigt rörigt med massor av linjer som korsar varandra.
+Många onödiga "merge branch" commits.
+
+#git rebase
+När du kör git rebase main på din feature branch flyttar du basen för din branch till den senaste commiten på main. Git kopplar tillfälligt loss dina commits, lägger på ändringarna från main, och spelar sedan in dina commits igen ovanpå.
+
+Fördelar:
+Ren och linjär historik: Historiken ser ut som en rak linje utan avstickare eller extra merge-commits. Det blir extremt lätt att läsa med git log.
+
+Nackdelar:
+Skriver om historiken: Gamla commits raderas och ersätts med nya commits som har nya commit-ID:n.
+Farligt på delade branches: Om någon annan jobbar på samma branch som du rebasar skapar det stora problem. Så kanske tips är: Undvik att rebasa en delad branch.
+
+# Man kan använda två scenarios/exemplar för att svara på den frågan.
+# Scenario A: git merge 
+# Scenario B: git rebase 
+
+# men först 
+# Skapa repo och basfiler
+mkdir VG_uppgift1
+cd VG_uppgift1
+git init
+
+# Skapa en grundfil på main
+echo "System Start" > app.txt
+git add app.txt
+git commit -m "Initial commit"
+
+# Skapa och byt till en ny feature-branch för inloggning
+git checkout -b feature-login
+
+# Lägg till en ny rad i filen app.txt och spara ändringen med en commit
+echo "Login System v1" >> app.txt
+git commit -am "Add login system"
+
+# Byt tillbaka till main-grenen och gör en helt annan ändring i samma fil samtidigt
+git checkout main
+echo "System Update from Main" >> app.txt
+git commit -am "Update main app file"
+
+# Försök att merga in feature-branch i main (detta kommer att trigga en konflikt eftersom samma fil har ändrats på båda ställena)
+git merge feature-login
+
+# Öppna app.txt i en textredigerare för att lösa konflikten manuellt.
+# Du tar bort konfliktsymbolerna (<<<<<<<, =======, >>>>>>>) och ser till att båda raderna finns kvar:
+# System Start
+# System Update from Main
+# Login System v1
+
+# När filen är sparad och konflikten är löst, lägg till filen och slutför mergen med en commit
+git add app.txt
+git commit -m "Merge feature-login and resolve conflict"
+
+...
+
+Scenario B: git rebase (Ren och linjär historik)
+# Skapa och byt till en ny
+# feature-branch för betalning
+git checkout -b feature-payment
+
+# Skapa en fil, lägg till betalningskod
+# och spara ändringen med en commit
+echo "Payment System v1" >> payment.txt
+echo "Payment Integration" >> app.txt
+git add .
+git commit -m "Add payment feature"
+
+# Byt till main och lägg till en
+# säkerhetspatch samtidigt i app.txt
+git checkout main
+echo "Security Patch" >> app.txt
+git commit -am "Apply security patch"
+
+# Byt tillbaka till din feature-branch
+# och rebase:a den ovanpå main
+git checkout feature-payment
+git rebase main
+
+# Git stannar vid en konflikt i app.txt.
+# Öppna filen och ta bort konfliktsymbolerna
+# (<<<<<<<, =======, >>>>>>>) så att
+# både betalningskoden och patchen finns kvar.
+
+# Lägg till den fixade filen
+git add app.txt
+
+# Fortsätt rebase-processen
+git rebase --continue
+
+# Byt till main och slutför genom
+# att merga in den rena grenen
+git checkout main
+git merge feature-payment
+
+# Visa den nya rena historiken
+git log --oneline 
+
+....
+
+Motivering: När använder man vad?
+Varför välja git rebase?
+För att städa upp din lokala feature branch innan du gör en Pull Request (PR). Det gör att historiken för hela projektet blir rak, snygg och enkel att läsa för resten av teamet utan massor av onödiga småcommits eller merge-rader.
+När är git merge att föredra?
+När du ska slå ihop en stor och viktig feature branch med main, eller på grenar som flera i teamet jobbar på samtidigt. Då vill man spara den exakta kontexten för när grenen slogs ihop, och man riskerar inte att förstöra historiken för andra i teamet genom att skriva om commit-ID:n.
