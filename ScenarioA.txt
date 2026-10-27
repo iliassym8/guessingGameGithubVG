@@ -1,0 +1,27 @@
+# Scenario A: git merge (Behålla kontext)
+
+# Skapa och byt till en ny feature-branch för inloggning
+git switch -c feature-login
+
+# Lägg till en ny rad i filen app.txt och spara ändringen med en commit
+echo "Login System v1" >> app.txt
+git commit -am "Add login system"
+
+# Byt tillbaka till main-grenen och gör en helt annan ändring i samma fil samtidigt
+git switch main
+echo "System Update from Main" >> app.txt
+git commit -am "Update main app file"
+
+# Försök att merga in feature-branch i main (detta kommer att trigga en konflikt eftersom samma fil har ändrats på båda ställena)
+git merge feature-login
+
+# Öppna app.txt i en textredigerare för att lösa konflikten manuellt.
+# Du tar bort konfliktsymbolerna (<<<<<<<, =======, >>>>>>>) och ser till att båda raderna finns kvar:
+# System Start
+# System Update from Main
+# Login System v1
+
+# När filen är sparad och konflikten är löst, lägg till filen och slutför mergen med en commit
+git add app.txt
+git commit -m "Merge feature-login and resolve conflict"
+
